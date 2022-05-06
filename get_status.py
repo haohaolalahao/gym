@@ -150,4 +150,4 @@ def check_bm_status(require_data='tomorrow'):
 
 
 if __name__ == "__main__":
-    check_bm_status(require_data='2022-05-07')
+    check_bm_status(require_data='2022-05-08')

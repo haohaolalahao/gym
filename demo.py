@@ -9,7 +9,8 @@ from rich import print
 token = "ae1660ad-042d-4293-b4e8-6706a314b5ee"
 
 headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.50",
+    "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.50",
     "token": token,
     "Host": "gym.dazuiwl.cn",
     "Origin": "http://gym.dazuiwl.cn",
@@ -20,7 +21,6 @@ headers = {
 cookie = {"PHPSESSID": "392enpsjdnre0svp25m8e31cmm"}
 
 submit_url = "http://gym.dazuiwl.cn/api/order/submit"
-
 
 payload = {
     "orderid": "",
@@ -47,8 +47,8 @@ payload_1 = {
 
 async def fetch(session, url, payload):
     async with session.post(url, data=payload) as resp:
-        if resp.status != 200:
-            resp.raise_for_status()
+        # if resp.status != 200:
+        #     resp.raise_for_status()
         data = await resp.json()
         # for test
         # await asyncio.sleep(2)
@@ -66,21 +66,26 @@ async def fetch_multi(session, url, payloads):
     return results
 
 
-async def post_main():
-    url = "http://gym.dazuiwl.cn/api/order/submit"
-    payloads = [payload, payload_1]
+async def post_main(url: str, payloads: list, headers: dict, cookies: dict):
     # tcp 连接池
     connection = aiohttp.TCPConnector(limit=3)
-    timeout = aiohttp.ClientTimeout(total=60, connect=10, sock_connect=10, sock_read=10)
-    async with aiohttp.ClientSession(headers=headers, cookies=cookie, connector=connection, timeout=timeout) as session:
-        res = await fetch_multi(session, submit_url, payloads)
+    timeout = aiohttp.ClientTimeout(total=60,
+                                    connect=10,
+                                    sock_connect=10,
+                                    sock_read=10)
+    async with aiohttp.ClientSession(headers=headers,
+                                     cookies=cookie,
+                                     connector=connection,
+                                     timeout=timeout) as session:
+        res = await fetch_multi(session, url, payloads)
         return res
 
+
 # 目标协程
-async def run():
+async def run(url: str, payloads: list, headers: dict, cookies: dict):
     print("Start: ", pendulum.now())
-    res = await post_main()
-    print(res)
+    res = await post_main(url, payloads, headers, cookies)
+    # print(res)
     # if 0 in res:
     #     print('hello world')
     #     raise Exception("Error")
@@ -96,11 +101,17 @@ async def run():
 #             return await asyncio.sleep(2)  # 假设请求返回时间
 
 
-async def create_task(event_loop):
+async def create_task(event_loop,
+                      url: str,
+                      payloads: list,
+                      headers: dict,
+                      cookies: dict,
+                      sleep_time=0.5):
     while True:
-        asyncio.run_coroutine_threadsafe(run(), event_loop)
+        asyncio.run_coroutine_threadsafe(run(url, payloads, headers, cookies),
+                                         event_loop)
         # 每间隔1s执行一次run()协程
-        await asyncio.sleep(0.5)  # 设置定时时间
+        await asyncio.sleep(sleep_time)  # 设置定时时间
 
 
 # 启动一个loop
@@ -116,8 +127,9 @@ if __name__ == "__main__":
     # loop.run_until_complete(main())
 
     thread_loop = asyncio.new_event_loop()  # 子线程loop
-    run_loop_thread = Thread(target=start_loop, args=(thread_loop,))
+    run_loop_thread = Thread(target=start_loop, args=(thread_loop, ))
     run_loop_thread.start()
 
     main_loop = asyncio.new_event_loop()
-    main_loop.run_until_complete(create_task(thread_loop))  # 在主线程loop里面执行子线程loop
+    main_loop.run_until_complete(
+        create_task(thread_loop))  # 在主线程loop里面执行子线程loop

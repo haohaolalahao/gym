@@ -121,7 +121,7 @@ def check_court_status(day: str = "tomorrow",
 
 if __name__ == "__main__":
     print(
-        check_court_status(day='2022-05-07',
+        check_court_status(day='2022-05-08',
                            court='1',
                            book_time_1='9',
                            book_time_2='10'))
