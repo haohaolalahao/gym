@@ -1,13 +1,15 @@
-from http import cookies
-import aiohttp
 import asyncio
+from http import cookies
+from threading import Thread
+
+import aiohttp
 import pendulum
+from rich import print
 
 token = "ae1660ad-042d-4293-b4e8-6706a314b5ee"
 
 headers = {
-    "User-Agent":
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.50",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.50",
     "token": token,
     "Host": "gym.dazuiwl.cn",
     "Origin": "http://gym.dazuiwl.cn",
@@ -43,36 +45,14 @@ payload_1 = {
 }
 
 
-
-
-async def main_1():
-    async with aiohttp.ClientSession(headers=headers, cookies=cookie) as session:
-        async with session.post(submit_url, data=payload) as response:
-            print('1-1', pendulum.now())
-            # print("Status:", response.status)
-            # print("Content-type:", response.headers['content-type'])
-
-            data = await response.json()
-            print(data)
-            print('1-2', pendulum.now())
-
-        async with session.post(submit_url, data=payload_1) as response:
-            print('2-1', pendulum.now())
-            # print("Status:", response.status)
-            # print("Content-type:", response.headers['content-type'])
-
-            data = await response.json()
-            print(data)
-            print('2-2', pendulum.now())
-
-
 async def fetch(session, url, payload):
     async with session.post(url, data=payload) as resp:
         if resp.status != 200:
             resp.raise_for_status()
         data = await resp.json()
-        print(data)
-        print(pendulum.now())
+        # for test
+        # await asyncio.sleep(2)
+        print(pendulum.now(), data)
         return data
 
 
@@ -86,22 +66,54 @@ async def fetch_multi(session, url, payloads):
     return results
 
 
-async def main():
+async def post_main():
     url = "http://gym.dazuiwl.cn/api/order/submit"
     payloads = [payload, payload_1]
     # tcp 连接池
     conn = aiohttp.TCPConnector(limit=3)
     # async with aiohttp.ClientSession(connector=conn) as session:
     async with aiohttp.ClientSession(headers=headers, cookies=cookie, connector=conn) as session:
-        datas = await fetch_multi(session, submit_url, payloads)
-        print(datas)
+        res_data = await fetch_multi(session, submit_url, payloads)
 
 
-if __name__ == '__main__':
+# 目标协程
+async def run():
+    print("Start: ", pendulum.now())
+    res = await post_main()
+    print("End: ", pendulum.now())
+
+
+# # 异步请求
+# async def get():
+#     url = 'http://www.baidu.com'
+#     async with aiohttp.ClientSession() as session:
+#         async with session.get(url) as response:
+#             # return await response.read()
+#             return await asyncio.sleep(2)  # 假设请求返回时间
+
+
+async def create_task(event_loop):
+    while True:
+        asyncio.run_coroutine_threadsafe(run(), event_loop)
+        # 每间隔1s执行一次run()协程
+        await asyncio.sleep(0.5)  # 设置定时时间
+
+
+# 启动一个loop
+def start_loop(loop):
+    asyncio.set_event_loop(loop)
+    loop.run_forever()
+
+
+if __name__ == "__main__":
     # asyncio.run(main())
 
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    # loop = asyncio.get_event_loop()
+    # loop.run_until_complete(main())
 
-    loop_1 = asyncio.get_event_loop()
-    loop_1.run_until_complete(main_1())
+    thread_loop = asyncio.new_event_loop()  # 子线程loop
+    run_loop_thread = Thread(target=start_loop, args=(thread_loop,))
+    run_loop_thread.start()
+
+    main_loop = asyncio.new_event_loop()
+    main_loop.run_until_complete(create_task(thread_loop))  # 在主线程loop里面执行子线程loop

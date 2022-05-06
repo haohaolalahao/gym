@@ -27,6 +27,7 @@ async def get():
 async def create_task(event_loop):
     while True:
         asyncio.run_coroutine_threadsafe(run(), event_loop)
+        # 每间隔1s执行一次run()协程
         await asyncio.sleep(1)  # 设置定时时间
 
 
