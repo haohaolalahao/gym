@@ -53,7 +53,7 @@ async def fetch(session, url, payload):
         # for test
         # await asyncio.sleep(2)
         print(pendulum.now(), data)
-        return data
+        return data['code']
 
 
 async def fetch_multi(session, url, payloads):
@@ -70,16 +70,20 @@ async def post_main():
     url = "http://gym.dazuiwl.cn/api/order/submit"
     payloads = [payload, payload_1]
     # tcp 连接池
-    conn = aiohttp.TCPConnector(limit=3)
-    # async with aiohttp.ClientSession(connector=conn) as session:
-    async with aiohttp.ClientSession(headers=headers, cookies=cookie, connector=conn) as session:
-        res_data = await fetch_multi(session, submit_url, payloads)
-
+    connection = aiohttp.TCPConnector(limit=3)
+    timeout = aiohttp.ClientTimeout(total=60, connect=10, sock_connect=10, sock_read=10)
+    async with aiohttp.ClientSession(headers=headers, cookies=cookie, connector=connection, timeout=timeout) as session:
+        res = await fetch_multi(session, submit_url, payloads)
+        return res
 
 # 目标协程
 async def run():
     print("Start: ", pendulum.now())
     res = await post_main()
+    print(res)
+    # if 0 in res:
+    #     print('hello world')
+    #     raise Exception("Error")
     print("End: ", pendulum.now())
 
 
