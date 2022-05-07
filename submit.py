@@ -41,10 +41,10 @@ async def fetch_multi(session, url, payloads):
 async def post_main(url: str, payloads: list, headers: dict, cookies: dict):
     # tcp 连接池
     connection = aiohttp.TCPConnector(limit=10)
-    timeout = aiohttp.ClientTimeout(total=60,
-                                    connect=10,
-                                    sock_connect=10,
-                                    sock_read=10)
+    timeout = aiohttp.ClientTimeout(total=300,
+                                    connect=60,
+                                    sock_connect=60,
+                                    sock_read=60)
     async with aiohttp.ClientSession(headers=headers,
                                      cookies=cookies,
                                      connector=connection,
@@ -230,7 +230,7 @@ def submit(
     # head
     # token ae1660ad-042d-4293-b4e8-6706a314b5ee
     if token == "":
-        token = "ae1660ad-042d-4293-b4e8-6706a314b5ee"
+        token = "e89f930e-a05b-43c3-97d5-2485db3a1d86"
 
     headers = {
         "User-Agent":
@@ -246,42 +246,42 @@ def submit(
     # cookie PHPSESSID=7a8lr0vgpbhuo8loi99uuce76j
 
     if cookie == "":
-        cookie = {"PHPSESSID": "392enpsjdnre0svp25m8e31cmm"}
+        cookie = {"PHPSESSID": "pttndkiboourekn7dstkeaca52"}
 
     # NOTE check cookies & token
-    try:
-        res = requests.post(submit_url,
-                            headers=headers,
-                            data=payload_1,
-                            cookies=cookie,
-                            timeout=5).json()
-    except:
-        print("please change cookie and token")
-        return 0
+    # try:
+    #     res = requests.post(submit_url,
+    #                         headers=headers,
+    #                         data=payload_1,
+    #                         cookies=cookie,
+    #                         timeout=5).json()
+    # except:
+    #     print("please change cookie and token")
+    #     return 0
 
     # NOTE check courts
-    try:
-        status_1 = check_court_status(day=day,
-                                      court=court_1,
-                                      book_time_1=book_time_1_1,
-                                      book_time_2=book_time_1_2,
-                                      print_info=True)
-        if status_1 != 1:
-            return 0
-        status_2 = check_court_status(day=day,
-                                      court=court_2,
-                                      book_time_1=book_time_2_1,
-                                      book_time_2=book_time_2_2,
-                                      print_info=True)
-        if status_2 != 1:
-            return 0
-    except:
-        print("check field")
-        return 0
+    # try:
+    #     status_1 = check_court_status(day=day,
+    #                                   court=court_1,
+    #                                   book_time_1=book_time_1_1,
+    #                                   book_time_2=book_time_1_2,
+    #                                   print_info=True)
+    #     if status_1 != 1:
+    #         return 0
+    #     status_2 = check_court_status(day=day,
+    #                                   court=court_2,
+    #                                   book_time_1=book_time_2_1,
+    #                                   book_time_2=book_time_2_2,
+    #                                   print_info=True)
+    #     if status_2 != 1:
+    #         return 0
+    # except:
+    #     print("check field")
+    #     return 0
 
     today = pendulum.today().to_date_string()
-    over_time = pendulum.parser.parse(today + "T07:20:00+08:00")
-    begin_time = pendulum.parser.parse(today + "T06:59:55+08:00")
+    over_time = pendulum.parser.parse(today + "T13:40:00+08:00")
+    begin_time = pendulum.parser.parse(today + "T06:59:58+08:00")
     # begin_time = pendulum.now()
     flag = 0
 
@@ -323,10 +323,10 @@ def submit(
                             payloads=[payload_1, payload_2],
                             headers=headers,
                             cookies=cookie,
-                            sleep_time=0.05))
+                            sleep_time=0.5))
 
         else:
-            time.sleep(0.5)
+            time.sleep(0.01)
 
         if now >= over_time:
             break
@@ -346,7 +346,7 @@ if __name__ == "__main__":
         court_1="2",
         book_time_1_1="10",
         book_time_1_2="11",
-        
+
         court_2="3",
         book_time_2_1="10",
         book_time_2_2="11",
