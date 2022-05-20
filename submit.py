@@ -67,15 +67,14 @@ async def run(url: str, payloads: list, headers: dict, cookies: dict):
 #             return await asyncio.sleep(2)  # 假设请求返回时间
 
 
-async def create_task(
-    event_loop, url: str, payloads: list, headers: dict, cookies: dict, endtime
-):
+async def create_task(event_loop, url: str, payloads: list, headers: dict, cookies: dict, endtime):
     time_flag = True
     while time_flag:
         time_flag = pendulum.now() < endtime
         asyncio.run_coroutine_threadsafe(run(url, payloads, headers, cookies), event_loop)
         await asyncio.sleep(random.random())
-    print('[bold red]End asyncio loop')
+    print("[bold red]End asyncio loop")
+
 
 def start_loop(loop):
     asyncio.set_event_loop(loop)
@@ -202,8 +201,6 @@ def submit(
         "Proxy-Connection": "keep-alive",
     }
 
-
-
     # NOTE check cookies & token
     # try:
     #     res = requests.post(submit_url,
@@ -236,10 +233,8 @@ def submit(
     #     return 0
 
     today = pendulum.today().to_date_string()
-    over_time = pendulum.parser.parse(today + "T07:05:00+08:00")
-    begin_time = pendulum.parser.parse(today + "T06:59:55+08:00")
-    # begin_time = pendulum.now()
-    flag = 0
+    over_time = pendulum.parser.parse(today + "T07:02:00+08:00")
+    begin_time = pendulum.parser.parse(today + "T06:59:59+08:00")
 
     while True:
         # Time judge
@@ -247,6 +242,7 @@ def submit(
         print(":timer_clock: ", now)
 
         if now >= begin_time:
+            # NOTE requests
             # try:
             #     res_1 = requests.post(submit_url,
             #                           headers=headers,
@@ -274,15 +270,25 @@ def submit(
             main_loop = asyncio.new_event_loop()
             main_loop.run_until_complete(
                 create_task(
-                    thread_loop, url=submit_url, payloads=[payload_1, payload_2], headers=headers, cookies=cookie, endtime=over_time
+                    thread_loop,
+                    url=submit_url,
+                    payloads=[payload_1, payload_2],
+                    headers=headers,
+                    cookies=cookie,
+                    endtime=over_time,
                 )
             )
-            # run_loop_thread.join()
+
+            main_loop.close()
+            time.sleep(300)
+            thread_loop.close()
+            print("[bold red]Close Terminal")
             break
         else:
-            time.sleep(0.01)
+            pass
 
-    print('[bold red]hello world')
+    print("[bold red]done")
+
 
 if __name__ == "__main__":
     submit(
