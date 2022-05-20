@@ -292,7 +292,6 @@ def submit(
 
 if __name__ == "__main__":
     submit(
-        # day="tomorrow",
         day="2022-05-22",
         court_1="2",
         book_time_1_1="10",
@@ -300,4 +299,6 @@ if __name__ == "__main__":
         court_2="3",
         book_time_2_1="10",
         book_time_2_2="11",
+        token = "e89f930e-a05b-43c3-97d5-2485db3a1d86",
+        cookie = {"PHPSESSID": "pttndkiboourekn7dstkeaca52"},
     )
